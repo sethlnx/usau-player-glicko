@@ -6,21 +6,30 @@ Static player and club rankings built from the same complete USAU, EUF, UFA, and
 
 ## Current results
 
-The site reports predictions before each game, then applies its result. The 2024–2025 slice is held out from model design; every earlier game remains training history.
+The site records each game's prediction from the opening rating of its
+tournament day, then applies all of that day's results as one Glicko-2 batch.
+The 2024–2025 slice is held out from model design; every earlier game remains
+training history.
 
 | Evaluation slice | Games | Accuracy | Log loss | Brier score |
 |---|---:|---:|---:|---:|
-| All seasons | 164,197 | 72.33% | 0.546558 | 0.183490 |
-| Held-out 2024–2025 | 28,607 | 74.11% | 0.530077 | 0.176514 |
-| Current 2026 | 10,074 | 75.11% | 0.523893 | 0.173834 |
+| All seasons | 164,197 | 74.14% | 0.527502 | 0.175520 |
+| Held-out 2024–2025 | 28,607 | 75.27% | 0.513509 | 0.169718 |
+| Current 2026 | 10,074 | 76.34% | 0.508217 | 0.167352 |
 
-On the identical corpus, the published Elo model scores 78.08% accuracy and 0.449024 log loss on 2024–2025. Glicko-2 therefore provides native per-player uncertainty, but it is not the stronger predictor in this implementation.
+On the identical held-out corpus, the published Elo model scores 78.08%
+accuracy and 0.449024 log loss. Glicko-2 therefore provides native per-player
+uncertainty, but it is not the stronger predictor in this implementation.
+
+The period-boundary benchmark scored per-game, per-day, and per-tournament
+updates at 76.86%/0.491153, 75.27%/0.513509, and 74.11%/0.530077 respectively
+on 2024–2025 (accuracy/log loss). This publication deliberately uses per-day.
 
 Accuracy uses a 0.5 decision threshold. Log loss evaluates the full probability and penalizes confident errors. Ties have outcome 0.5.
 
 ## Model contract
 
-- One tournament is one Glicko-2 rating period. Every game at the event is predicted from opening ratings; all event results are then applied in one batch.
+- One tournament day is one Glicko-2 rating period. Every game that day is predicted from its opening ratings; all of the day's results are then applied in one batch.
 - A team's rating is the softmax-weighted mean of its event roster's player ratings, matching the Elo site's roster contract.
 - Team rating deviation is the root-sum-square uncertainty of that weighted mean.
 - Inactivity expands rating deviation in 30-day periods. It does not decay the rating itself.
